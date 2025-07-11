@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Interactivo: Informe de Actividades UIF (Ene-Jun 2025)</title>
+    <!-- Chosen Palette: "360EDUCA 2023" -->
+    <!-- Application Structure Plan: Se ha diseñado una aplicación de panel de control (dashboard) de una sola página con una estructura temática y narrativa. El flujo es: 1) Un resumen de alto nivel con KPIs clave. 2) Una inmersión profunda en las fuentes de datos. 3) Un análisis del impacto y las consecuencias legales. 4) Un nuevo analizador de riesgos con IA para aplicar los conocimientos de forma práctica. Esta estructura fue elegida para transformar un informe estático en una historia interactiva y una herramienta de análisis. -->
+    <!-- Visualization & Content Choices: 1) Avisos de Actividades Vulnerables -> Gráfico de dona (Chart.js). 2) Reportes del Sistema Financiero -> Gráfico de barras horizontales (Chart.js). 3) Montos Desbloqueados -> Gráfico de líneas (Chart.js) con interacción de moneda. 4) KPIs -> Tarjetas de datos (HTML/Tailwind). 5) Analizador de IA -> Textarea + Botón que llama a una función serverless de Netlify. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #f6fff8;
+            --color-text-primary: #1b1b1e;
+            --color-text-secondary: #393e41;
+            --color-accent-primary: #ff8361;
+            --color-accent-primary-dark: #f36a44;
+            --color-accent-secondary: #87d895;
+            --color-accent-tertiary: #a663cc;
+            --color-ui-bg: #ffffff;
+            --color-ui-subtle: #e8e8e8;
+        }
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+        }
+        .chart-container { position: relative; width: 100%; margin-left: auto; margin-right: auto; }
+        .kpi-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08); }
+        .nav-button.active { background-color: var(--color-accent-primary); color: white; }
+        .nav-button { transition: all 0.2s ease-in-out; }
+        .loader {
+            border: 4px solid var(--color-ui-subtle);
+            border-top: 4px solid var(--color-accent-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-[var(--color-bg)] text-[var(--color-text-primary)]">
+
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">Análisis Interactivo del Informe de la UIF</h1>
+            <p class="mt-3 text-lg text-[var(--color-text-secondary)] max-w-3xl mx-auto">Una exploración visual y una herramienta de análisis de riesgos basada en los datos de la Unidad de Inteligencia Financiera de México.</p>
+        </header>
+
+        <nav class="sticky top-4 z-40 bg-white/70 backdrop-blur-md rounded-xl shadow-sm mb-12 flex justify-center p-2">
+            <div class="flex flex-wrap justify-center space-x-1 sm:space-x-2 rounded-lg bg-slate-100 p-1">
+                <button data-target="panorama" class="nav-button active text-xs sm:text-base font-medium py-2 px-3 sm:px-4 rounded-lg">Panorama</button>
+                <button data-target="fuentes" class="nav-button text-xs sm:text-base font-medium py-2 px-3 sm:px-4 rounded-lg">Fuentes</button>
+                <button data-target="impacto" class="nav-button text-xs sm:text-base font-medium py-2 px-3 sm:px-4 rounded-lg">Impacto</button>
+                <button data-target="analizador" class="nav-button text-xs sm:text-base font-medium py-2 px-3 sm:px-4 rounded-lg">Analizador IA</button>
+            </div>
+        </nav>
+
+        <main>
+            <section id="panorama" class="content-section space-y-8">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold">Panorama General del Semestre</h2>
+                    <p class="mt-2 text-md text-[var(--color-text-secondary)] max-w-2xl mx-auto">Un resumen de las cifras más importantes que definen la actividad de la UIF de enero a junio de 2025.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="kpi-card bg-[var(--color-ui-bg)] p-6 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                        <h3 class="text-[var(--color-text-secondary)] font-medium">Informes Recibidos</h3>
+                        <p class="text-4xl font-bold text-[var(--color-accent-primary)] mt-2">22.1 M</p>
+                        <p class="text-sm text-gray-400 mt-1">Total de reportes y avisos</p>
+                    </div>
+                    <div class="kpi-card bg-[var(--color-ui-bg)] p-6 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                        <h3 class="text-[var(--color-text-secondary)] font-medium">Denuncias Presentadas</h3>
+                        <p class="text-4xl font-bold text-[var(--color-accent-primary)] mt-2">77</p>
+                        <p class="text-sm text-gray-400 mt-1">Ante autoridades competentes</p>
+                    </div>
+                    <div class="kpi-card bg-[var(--color-ui-bg)] p-6 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                        <h3 class="text-[var(--color-text-secondary)] font-medium">Sujetos Denunciados</h3>
+                        <p class="text-4xl font-bold text-[var(--color-accent-primary)] mt-2">444</p>
+                        <p class="text-sm text-gray-400 mt-1">Personas físicas y morales</p>
+                    </div>
+                    <div class="kpi-card bg-[var(--color-ui-bg)] p-6 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                        <h3 class="text-[var(--color-text-secondary)] font-medium">Sujetos Bloqueados</h3>
+                        <p class="text-4xl font-bold text-[var(--color-accent-primary)] mt-2">13</p>
+                        <p class="text-sm text-gray-400 mt-1">Acuerdos de incorporación a la LPB</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="fuentes" class="content-section space-y-12 hidden">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold">El Origen de la Inteligencia: Fuentes de Datos</h2>
+                    <p class="mt-2 text-md text-[var(--color-text-secondary)] max-w-2xl mx-auto">La UIF recibe millones de informes de dos grandes vertientes: el Sistema Financiero y las denominadas Actividades Vulnerables. Visualice la composición y el volumen de esta información.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                    <div class="lg:col-span-3 bg-[var(--color-ui-bg)] p-6 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                        <h3 class="text-lg font-semibold">Avisos de Actividades Vulnerables (Total: 8.5 M)</h3>
+                        <p class="text-sm text-[var(--color-text-secondary)] mb-4">El sector de Activos Virtuales domina la recepción de avisos, señalando un foco de riesgo clave.</p>
+                        <div class="chart-container h-80 md:h-96 max-h-[450px]">
+                            <canvas id="vulnerableActivitiesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-[var(--color-ui-bg)] p-6 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                        <h3 class="text-lg font-semibold">Reportes del Sistema Financiero (Total: 13.6 M)</h3>
+                        <p class="text-sm text-[var(--color-text-secondary)] mb-4">Comparativa del volumen de los diferentes tipos de reportes enviados por las entidades financieras.</p>
+                        <div class="chart-container h-80 md:h-96 max-h-[450px]">
+                            <canvas id="financialSystemChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="impacto" class="content-section space-y-12 hidden">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold">Impacto, Retos y Respuestas Legales</h2>
+                    <p class="mt-2 text-md text-[var(--color-text-secondary)] max-w-2xl mx-auto">Las acciones de la UIF generan respuestas en el ámbito legal. Esta sección explora el volumen de litigios y el impacto de las suspensiones definitivas en los montos bloqueados.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-[var(--color-ui-bg)] p-6 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                         <h3 class="text-lg font-semibold">Retos Legales y Administrativos</h3>
+                         <p class="text-sm text-[var(--color-text-secondary)] mb-6">Cifras clave sobre los procedimientos legales y administrativos atendidos por la UIF.</p>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-baseline p-3 bg-gray-100 rounded-lg">
+                                <span class="font-medium">Demandas de Amparo</span>
+                                <span class="font-bold text-2xl text-[var(--color-accent-primary)]">431</span>
+                            </div>
+                            <div class="flex justify-between items-baseline p-3 bg-gray-100 rounded-lg">
+                                <span class="font-medium">Suspensiones Definitivas Cumplidas</span>
+                                <span class="font-bold text-2xl text-[var(--color-accent-primary)]">136</span>
+                            </div>
+                            <div class="flex justify-between items-baseline p-3 bg-gray-100 rounded-lg">
+                                <span class="font-medium">Ejecutorias de Amparo Concedidas</span>
+                                <span class="font-bold text-2xl text-[var(--color-accent-primary)]">183</span>
+                            </div>
+                             <div class="flex justify-between items-baseline p-3 bg-gray-100 rounded-lg">
+                                <span class="font-medium">Juicios Contenciosos</span>
+                                <span class="font-bold text-2xl text-[var(--color-accent-primary)]">53</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-[var(--color-ui-bg)] p-6 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                        <h3 class="text-lg font-semibold">Tendencia de Montos Desbloqueados</h3>
+                        <p class="text-sm text-[var(--color-text-secondary)] mb-4">Evolución anual de los montos desbloqueados por suspensiones definitivas, reflejando un desafío persistente.</p>
+                        <div class="flex justify-center space-x-2 mb-4">
+                            <button id="btn-mxn" class="currency-btn active bg-[var(--color-accent-primary)] text-white text-sm font-semibold py-1 px-3 rounded-full">MXN</button>
+                            <button id="btn-usd" class="currency-btn bg-gray-200 text-gray-700 text-sm font-semibold py-1 px-3 rounded-full">USD</button>
+                            <button id="btn-eur" class="currency-btn bg-gray-200 text-gray-700 text-sm font-semibold py-1 px-3 rounded-full">EURO</button>
+                        </div>
+                        <div class="chart-container h-72 md:h-80 max-h-[350px]">
+                            <canvas id="unblockedFundsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="analizador" class="content-section space-y-8 hidden">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold">Analizador de Riesgos con IA</h2>
+                    <p class="mt-2 text-md text-[var(--color-text-secondary)] max-w-2xl mx-auto">Describa un escenario o caso sospechoso para obtener un análisis de riesgo automatizado, identificando banderas rojas y posibles tipologías de PLD/FT.</p>
+                </div>
+                <div class="max-w-3xl mx-auto bg-[var(--color-ui-bg)] p-6 sm:p-8 rounded-xl shadow-sm border border-[var(--color-ui-subtle)]">
+                    <div class="space-y-4">
+                        <label for="caseDescription" class="block text-sm font-medium">Descripción del Caso:</label>
+                        <textarea id="caseDescription" rows="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--color-accent-primary)] focus:border-[var(--color-accent-primary)]" placeholder="Ej: Un cliente sin historial crediticio recibe múltiples transferencias internacionales de alto valor desde paraísos fiscales, que son retiradas en efectivo casi de inmediato..."></textarea>
+                        <button id="analyzeCaseBtn" class="w-full bg-[var(--color-accent-primary)] text-white font-bold py-3 px-4 rounded-lg hover:bg-[var(--color-accent-primary-dark)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-accent-primary)] transition-colors">
+                            Analizar Caso
+                        </button>
+                    </div>
+                    <div id="analysisResult" class="mt-6">
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center mt-16 pt-8 border-t border-[var(--color-ui-subtle)]">
+            <p class="text-sm text-[var(--color-text-secondary)]">Visualización de datos elaborada a partir del "Informe de Actividades Enero - Junio 2025" de la Unidad de Inteligencia Financiera de México.</p>
+        </footer>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const chartColors = {
+        primary: '#ff8361',
+        secondary: '#87d895',
+        tertiary: '#a663cc',
+        dark: '#393e41',
+        light: '#f6fff8',
+        textPrimary: '#1b1b1e',
+        other1: '#ffA07A', 
+        other2: '#7aa9a6',
+        other3: '#d3aed6'
+    };
+    
+    const formatNumber = (num) => {
+        if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+        if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+        return num;
+    };
+
+    const wrapLabel = (str, max_width) => {
+        const words = str.split(' ');
+        let lines = [];
+        let current_line = words[0];
+        for (let i = 1; i < words.length; i++) {
+            if (current_line.length + words[i].length + 1 < max_width) {
+                current_line += ' ' + words[i];
+            } else {
+                lines.push(current_line);
+                current_line = words[i];
+            }
+        }
+        lines.push(current_line);
+        return lines;
+    };
+    
+    const vulnerableActivitiesData = {
+        labels: [
+            'Activos Virtuales', 'Tarjetas de Servicio/Crédito', 'Traslado de Valores', 'Vehículos', 
+            'Mutuo/Préstamos', 'Juegos y Sorteos', 'Fé Pública', 'Inmuebles (Arrendamiento)', 'Otros'
+        ],
+        datasets: [{
+            label: 'Número de Avisos',
+            data: [4073212, 1384295, 1144456, 556707, 383748, 232371, 215923, 169912, (84467 + 1727 + 200 + 1314 + 89450 + 10336 + 149762)],
+            backgroundColor: [
+                chartColors.primary, chartColors.secondary, chartColors.tertiary, chartColors.dark,
+                chartColors.other1, chartColors.other2, chartColors.other3, '#b0c4de', '#ffdead'
+            ],
+            borderColor: 'var(--color-ui-bg)', borderWidth: 2, hoverOffset: 8
+        }]
+    };
+
+    const vulnerableActivitiesChartCtx = document.getElementById('vulnerableActivitiesChart');
+    if (vulnerableActivitiesChartCtx) {
+        new Chart(vulnerableActivitiesChartCtx.getContext('2d'), {
+            type: 'doughnut', data: vulnerableActivitiesData,
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 20, font: { size: 12 }, color: chartColors.textPrimary } },
+                    tooltip: { callbacks: { label: (c) => `${c.dataset.label || ''}: ${new Intl.NumberFormat('es-MX').format(c.parsed)}` } }
+                }, cutout: '60%'
+            }
+        });
+    }
+
+    const financialSystemData = {
+        labels: [
+            'Operaciones Relevantes', 'Transferencias Internacionales', 'Operaciones con Dólares', 
+            'Cheques de Caja', 'Operaciones Inusuales', 'Montos Totales (C. Cambiarios)', 'Operaciones Internas Preocupantes'
+        ],
+        datasets: [{
+            label: 'Número de Reportes',
+            data: [6491847, 4843824, 1952316, 197828, 155779, 3645, 532],
+            backgroundColor: chartColors.primary, borderColor: chartColors.primary, borderWidth: 1, borderRadius: 4
+        }]
+    };
+
+    const financialSystemChartCtx = document.getElementById('financialSystemChart');
+    if(financialSystemChartCtx) {
+        new Chart(financialSystemChartCtx.getContext('2d'), {
+            type: 'bar', data: financialSystemData,
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { beginAtZero: true, ticks: { callback: (v) => formatNumber(v), font: { size: 10 }, color: chartColors.textPrimary } },
+                    y: { ticks: { font: { size: 11 }, callback: (v) => wrapLabel(financialSystemData.labels[v], 25), color: chartColors.textPrimary } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (c) => `${c.dataset.label || ''}: ${new Intl.NumberFormat('es-MX').format(c.parsed.x)}` } }
+                }
+            }
+        });
+    }
+    
+    const unblockedFundsData = {
+        labels: ['2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+        datasets: [
+            { label: 'MXN', data: [25356930, 24200922, 15858316, 32571534, 13302186729, 2374894748, 722807351, 77524576, 3533001848, 2744945484, 92416365], borderColor: chartColors.primary, backgroundColor: chartColors.primary + '33', fill: true, tension: 0.3 },
+            { label: 'USD', data: [7172, 0, 0, 1973, 40234052, 939901, 1982559, 35391, 81094098, 3432501, 3260], borderColor: chartColors.secondary, backgroundColor: chartColors.secondary + '33', fill: true, tension: 0.3, hidden: true },
+            { label: 'EURO', data: [0, 0, 0, 0, 2937, 6456, 2079, 0, 8953, 0, 0], borderColor: chartColors.tertiary, backgroundColor: chartColors.tertiary + '33', fill: true, tension: 0.3, hidden: true }
+        ]
+    };
+    
+    let unblockedFundsChart;
+    const unblockedFundsChartCtx = document.getElementById('unblockedFundsChart');
+    if (unblockedFundsChartCtx) {
+        unblockedFundsChart = new Chart(unblockedFundsChartCtx.getContext('2d'), {
+            type: 'line', data: unblockedFundsData,
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { 
+                    y: { beginAtZero: true, ticks: { callback: (v) => formatNumber(v), color: chartColors.textPrimary } },
+                    x: { ticks: { color: chartColors.textPrimary } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (c) => {
+                                let label = c.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (c.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('es-MX', { style: 'currency', currency: c.dataset.label, minimumFractionDigits: 0 }).format(c.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const currencyButtons = document.querySelectorAll('.currency-btn');
+    currencyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const currency = button.id.split('-')[1].toUpperCase();
+            unblockedFundsChart.data.datasets.forEach(dataset => {
+                dataset.hidden = dataset.label !== currency;
+            });
+            unblockedFundsChart.update();
+            currencyButtons.forEach(btn => {
+                btn.classList.remove('active', 'bg-[var(--color-accent-primary)]', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            button.classList.add('active', 'bg-[var(--color-accent-primary)]', 'text-white');
+            button.classList.remove('bg-gray-200', 'text-gray-700');
+        });
+    });
+
+    const navButtons = document.querySelectorAll('.nav-button');
+    const sections = document.querySelectorAll('.content-section');
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.dataset.target;
+            sections.forEach(section => {
+                section.id === targetId ? section.classList.remove('hidden') : section.classList.add('hidden');
+            });
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+        });
+    });
+
+    const analyzeButton = document.getElementById('analyzeCaseBtn');
+    const caseDescription = document.getElementById('caseDescription');
+    const analysisResult = document.getElementById('analysisResult');
+
+    if (analyzeButton) {
+        analyzeButton.addEventListener('click', async () => {
+            const description = caseDescription.value;
+            if (!description.trim()) {
+                analysisResult.innerHTML = `<p class="text-orange-600">Por favor, ingrese una descripción del caso.</p>`;
+                return;
+            }
+
+            analysisResult.innerHTML = `<div class="flex justify-center items-center p-4"><div class="loader"></div></div>`;
+            
+            const prompt = `Actúa como un experto analista de la Unidad de Inteligencia Financiera (UIF) de México. Basado en el siguiente caso descrito por un usuario, realiza un análisis de riesgo detallado. Tu análisis debe incluir:\n\n1.  **Banderas Rojas:** Enumera claramente las señales de alerta o 'red flags' que identifiques en la descripción.\n2.  **Posibles Tipologías de PLD/FT:** Sugiere las posibles tipologías de lavado de dinero o financiamiento al terrorismo que podrían estar relacionadas con el caso, explicando brevemente por qué.\n3.  **Recomendaciones de Siguientes Pasos:** Sugiere de forma concisa qué acciones o verificaciones adicionales se podrían realizar.\n\nFormatea tu respuesta en Markdown para una fácil lectura, usando encabezados y listas. Aquí está el caso:\n\n"${description}"`;
+
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                
+                // MODIFICACIÓN CLAVE: Apuntar a nuestra función de Netlify en lugar de la API de Google
+                const apiUrl = `/.netlify/functions/geminiProxy`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Error de la API: ${response.statusText}. ${errorData.error?.message || ''}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    const formattedText = text
+                        .replace(/#+\s*(.*)/g, '<h4 class="text-md font-bold text-[var(--color-text-primary)] mt-4 mb-2">$1</h4>')
+                        .replace(/\*\*\s*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*\s(.*?)(?=\n\*|\n\n|$)/g, '<li class="ml-5 list-disc">$1</li>')
+                        .replace(/(\r\n|\n|\r)/g, "<br>")
+                        .replace(/<br><li/g, '<li')
+                        .replace(/<\/li><br>/g, '</li>');
+                    analysisResult.innerHTML = `<div class="prose prose-sm max-w-none text-[var(--color-text-secondary)]">${formattedText}</div>`;
+                } else {
+                    // Si la respuesta de Gemini tiene un error de contenido (ej. bloqueo de seguridad)
+                    if (result.candidates && result.candidates[0].finishReason) {
+                         throw new Error(`Análisis detenido por la API. Razón: ${result.candidates[0].finishReason}`);
+                    }
+                    throw new Error("La respuesta de la API no contiene el texto esperado.");
+                }
+
+            } catch (error) {
+                analysisResult.innerHTML = `<p class="text-red-600">Ocurrió un error al analizar el caso. Por favor, inténtelo de nuevo más tarde. <br><small>${error.message}</small></p>`;
+                console.error("Error fetching proxy function:", error);
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>

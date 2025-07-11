@@ -1,0 +1,16 @@
+# netlify.toml
+
+# Reglas de construcción y despliegue
+[build]
+  # Directorio donde se encuentran las funciones serverless
+  functions = "netlify/functions"
+  # Comando de construcción (no es necesario para un sitio estático simple)
+  # command = "npm run build" 
+  # Directorio a publicar (la raíz en este caso)
+  # publish = "dist"
+
+# Redirección para que nuestra función sea accesible desde una URL más limpia
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
